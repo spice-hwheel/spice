@@ -287,7 +287,7 @@ static bool inputs_channel_handle_message(RedChannelClient *rcc, uint16_t type,
             SpiceMouseInterface *sif;
             sif = SPICE_CONTAINEROF(mouse->base.sif, SpiceMouseInterface, base);
             sif->motion(mouse,
-                        mouse_motion->dx, mouse_motion->dy, 0,
+                        mouse_motion->dx, mouse_motion->dy, 0, 0,
                         RED_MOUSE_STATE_TO_LOCAL(mouse_motion->buttons_state));
         }
         break;
@@ -317,8 +317,13 @@ static bool inputs_channel_handle_message(RedChannelClient *rcc, uint16_t type,
     }
     case SPICE_MSGC_INPUTS_MOUSE_PRESS: {
         SpiceMsgcMousePress *mouse_press = message;
+        int dw = 0;
         int dz = 0;
-        if (mouse_press->button == SPICE_MOUSE_BUTTON_UP) {
+        if (mouse_press->button == SPICE_MOUSE_BUTTON_WHEEL_LEFT) {
+            dw = -1;
+        } else if (mouse_press->button == SPICE_MOUSE_BUTTON_WHEEL_RIGHT) {
+            dw = 1;
+        } else if (mouse_press->button == SPICE_MOUSE_BUTTON_UP) {
             dz = -1;
         } else if (mouse_press->button == SPICE_MOUSE_BUTTON_DOWN) {
             dz = 1;
@@ -327,6 +332,8 @@ static bool inputs_channel_handle_message(RedChannelClient *rcc, uint16_t type,
             if (reds_config_get_agent_mouse(reds) && reds_has_vdagent(reds)) {
                 inputs_channel->mouse_state.buttons =
                     RED_MOUSE_BUTTON_STATE_TO_AGENT(mouse_press->buttons_state) |
+                    (dw == -1 ? VD_AGENT_WLBUTTON_MASK : 0) |
+                    (dw == 1 ? VD_AGENT_WRBUTTON_MASK : 0) |
                     (dz == -1 ? VD_AGENT_UBUTTON_MASK : 0) |
                     (dz == 1 ? VD_AGENT_DBUTTON_MASK : 0);
                 reds_handle_agent_mouse_event(reds, &inputs_channel->mouse_state);
@@ -334,14 +341,14 @@ static bool inputs_channel_handle_message(RedChannelClient *rcc, uint16_t type,
                 SpiceTabletInterface *sif;
                 sif = SPICE_CONTAINEROF(inputs_channel_get_tablet(inputs_channel)->base.sif,
                                         SpiceTabletInterface, base);
-                sif->wheel(inputs_channel_get_tablet(inputs_channel), dz,
+                sif->wheel(inputs_channel_get_tablet(inputs_channel), dw, dz,
                            RED_MOUSE_STATE_TO_LOCAL(mouse_press->buttons_state));
             }
         } else if (inputs_channel_get_mouse(inputs_channel)) {
             SpiceMouseInterface *sif;
             sif = SPICE_CONTAINEROF(inputs_channel_get_mouse(inputs_channel)->base.sif,
                                     SpiceMouseInterface, base);
-            sif->motion(inputs_channel_get_mouse(inputs_channel), 0, 0, dz,
+            sif->motion(inputs_channel_get_mouse(inputs_channel), 0, 0, dw, dz,
                         RED_MOUSE_STATE_TO_LOCAL(mouse_press->buttons_state));
         }
         break;

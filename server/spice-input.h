@@ -48,7 +48,7 @@ struct SpiceKbdInstance {
 int spice_server_kbd_leds(SpiceKbdInstance *sin, int leds);
 
 #define SPICE_INTERFACE_MOUSE "mouse"
-#define SPICE_INTERFACE_MOUSE_MAJOR 1
+#define SPICE_INTERFACE_MOUSE_MAJOR 2
 #define SPICE_INTERFACE_MOUSE_MINOR 1
 typedef struct SpiceMouseInterface SpiceMouseInterface;
 typedef struct SpiceMouseInstance SpiceMouseInstance;
@@ -57,7 +57,7 @@ typedef struct SpiceMouseState SpiceMouseState;
 struct SpiceMouseInterface {
     SpiceBaseInterface base;
 
-    void (*motion)(SpiceMouseInstance *sin, int dx, int dy, int dz,
+    void (*motion)(SpiceMouseInstance *sin, int dx, int dy, int dw, int dz,
                    uint32_t buttons_state);
     void (*buttons)(SpiceMouseInstance *sin, uint32_t buttons_state);
 };
@@ -68,7 +68,7 @@ struct SpiceMouseInstance {
 };
 
 #define SPICE_INTERFACE_TABLET "tablet"
-#define SPICE_INTERFACE_TABLET_MAJOR 1
+#define SPICE_INTERFACE_TABLET_MAJOR 2
 #define SPICE_INTERFACE_TABLET_MINOR 1
 typedef struct SpiceTabletInterface SpiceTabletInterface;
 typedef struct SpiceTabletInstance SpiceTabletInstance;
@@ -79,7 +79,7 @@ struct SpiceTabletInterface {
 
     void (*set_logical_size)(SpiceTabletInstance* tablet, int width, int height);
     void (*position)(SpiceTabletInstance* tablet, int x, int y, uint32_t buttons_state);
-    void (*wheel)(SpiceTabletInstance* tablet, int wheel_moution, uint32_t buttons_state);
+    void (*wheel)(SpiceTabletInstance* tablet, int wheel_hmotion, int wheel_vmotion, uint32_t buttons_state);
     void (*buttons)(SpiceTabletInstance* tablet, uint32_t buttons_state);
 };
 
